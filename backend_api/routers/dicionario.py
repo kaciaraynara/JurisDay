@@ -1,7 +1,7 @@
 import os
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from google import genai
+import google.generativeai as genai
 
 router = APIRouter()
 
