@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>JURISDAY | Login</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="auth-shell">
+    <div class="auth-grid">
+      <div class="auth-hero">
+        <span class="eyebrow-badge">IA Jurídica 24/7</span>
+        <h1>Login seguro e profissional</h1>
+        <p class="sub">Acesse petições, prazos e financeiro com sigilo e camadas extras de proteção.</p>
+        <ul class="bullet-list">
+          <li><span class="bullet-dot">•</span>Entrar com e-mail, CPF ou CNPJ.</li>
+          <li><span class="bullet-dot">•</span>Petições prontas e timbradas em PDF/Word.</li>
+          <li><span class="bullet-dot">•</span>Alertas automáticos para clientes e prazos.</li>
+        </ul>
+        <div class="hero-actions" style="margin-top:24px;">
+          <button onclick="window.location.href='/static/signup.html'">Criar conta grátis (7 dias)</button>
+          <button class="ghost" onclick="window.location.href='/app'">Voltar ao painel</button>
+        </div>
+      </div>
+
+      <div class="auth-card">
+        <div class="card-header" style="justify-content: space-between;">
+          <div>
+            <p class="eyebrow">Acesso</p>
+            <h2>Entrar</h2>
+          </div>
+          <div class="pill">Acesso seguro</div>
+        </div>
+        <div class="form-grid">
+          <label for="login-email">E-mail, CPF ou CNPJ</label>
+          <input id="login-email" placeholder="ex: contato@adv.com ou 123.456.789-00">
+          <label for="login-senha">Senha</label>
+          <input id="login-senha" type="password" placeholder="Sua senha">
+        </div>
+        <div class="actions">
+          <button id="btn-login" onclick="login()">Acessar</button>
+          <button class="ghost" onclick="window.location.href='/static/signup.html'">Criar conta</button>
+        </div>
+        <div id="login-msg" class="muted"></div>
+        <div id="login-loader" class="loader" style="display:none;">Processando...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = ""; // mesma origem do front
+    const btnLogin = document.getElementById('btn-login');
+    const loader = document.getElementById('login-loader');
+    const msg = document.getElementById('login-msg');
+
+    async function login(){
+      const email = document.getElementById('login-email').value;
+      const senha = document.getElementById('login-senha').value;
+      msg.innerText='';
+      btnLogin.disabled=true; loader.style.display='block';
+      try{
+        const resp = await fetch(`${API_URL}/auth/login`, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ email_ou_cnpj: email, senha })
+        });
+        if(!resp.ok) throw new Error(`Erro ${resp.status}`);
+        const data = await resp.json();
+        localStorage.setItem('jurisday_token', data.token);
+        localStorage.setItem('jurisday_user', data.nome);
+        localStorage.setItem('last_login_email', email);
+        window.location.href = '/app';
+      }catch(e){
+        msg.innerText = 'Falha no login: ' + e.message;
+      }finally{
+        btnLogin.disabled=false; loader.style.display='none';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "JurisDay",
+  "short_name": "JurisDay",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#030712",
+  "theme_color": "#0b1224",
+  "icons": [
+    {
+      "src": "/static/icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

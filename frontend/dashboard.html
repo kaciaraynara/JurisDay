@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>JURISDAY | Elite Inteligência Jurídica</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">JURISDAY</div>
+        <nav>
+            <div class="menu-item" onclick="mostrarTela(event,'peticao')">⚖️ Petições IA</div>
+            <div class="menu-item" onclick="mostrarTela(event,'dicionario')">📖 Dicionário</div>
+            <div class="menu-item" onclick="mostrarTela(event,'detetive')">🔍 Detetive</div>
+            <div class="menu-item" onclick="mostrarTela(event,'honorarios')">💰 Honorários</div>
+            <div class="menu-item" onclick="mostrarTela(event,'notificacoes')">🔔 Notificações</div>
+            <div class="menu-item" onclick="mostrarTela(event,'planos')">💎 Planos</div>
+            <div class="menu-item" onclick="mostrarTela(event,'processos')">📂 Processos (JUS)</div>
+            <div class="menu-item" onclick="mostrarTela(event,'clientes')">👥 Clientes</div>
+        </nav>
+
+        <div class="upload-logo">
+            <p class="label">Logo do escritório</p>
+            <input type="file" accept="image/*" onchange="salvarLogo(event)">
+            <div id="preview-logo" class="logo-preview">Sem logo</div>
+        </div>
+
+        <div class="sidebar-footer">
+            © 2026 JURISDAY<br>Agente Fiel do Advogado
+        </div>
+    </div>
+
+    <div class="main-content" id="dashboard">
+        <header class="hero">
+            <div>
+                <p class="eyebrow">IA Jurídica 24/7</p>
+                <h1>Automatize petições, cálculos e monitoramento em minutos.</h1>
+                <p class="sub">Redação assistida, timbre automático, honorários claros e alertas de andamento para manter cada cliente informado.</p>
+                <div class="hero-actions">
+                    <button onclick="mostrarTela(null,'peticao')">Redigir agora</button>
+                    <button class="ghost" onclick="mostrarTela(null,'planos')">Ver planos</button>
+                    <button class="ghost" onclick="mostrarTela(null,'processos')">Monitorar processos</button>
+                </div>
+            </div>
+            <div class="stats">
+                <div class="stat"><span>+500</span> min/mês economizados</div>
+                <div class="stat"><span>98%</span> satisfação dos clientes beta</div>
+                <div class="stat"><span>LGPD-ready</span> segurança por padrão</div>
+            </div>
+        </header>
+
+        <div class="card" id="card-dinamico">
+            <div class="card-header">
+                <h2 id="titulo-modulo">Escolha um módulo</h2>
+                <div id="pill-modulo" class="pill">Produtividade total</div>
+                <div class="auth-actions">
+                    <button class="ghost" onclick="abrirAuth('login')">Login</button>
+                    <button onclick="abrirAuth('signup')">Cadastro</button>
+                </div>
+            </div>
+            
+            <div id="inputs-dinamicos" class="grid-two">
+                <p class="muted">Selecione uma ferramenta para começar. Petições em PDF/Word com timbre e assinatura disponíveis.</p>
+            </div>
+            
+            <div id="btns-acao" class="actions" style="display:none;">
+                <button id="btn-acao" onclick="executarIA()">Processar com IA</button>
+                <div class="download-group" id="download-group" style="display:none;">
+                    <button class="ghost" onclick="baixar('doc')">Exportar Word</button>
+                    <button class="ghost" onclick="baixar('pdf')">Exportar PDF</button>
+                </div>
+            </div>
+            
+            <div id="loader" class="loader" style="display:none;">✨ A IA está redigindo seu conteúdo jurídico...</div>
+            <div id="resultado-ia" class="resultado"></div>
+        </div>
+
+        <div id="checkout-modal" class="modal" style="display:none;">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div>
+                        <p class="eyebrow">Checkout seguro</p>
+                        <h3 id="checkout-plano">Plano</h3>
+                    </div>
+                    <button class="ghost" onclick="fecharCheckout()">Fechar</button>
+                </div>
+                <div id="checkout-pix" style="display:none;">
+                    <p class="muted">Copie o código PIX abaixo e pague no seu app bancário.</p>
+                    <textarea id="pix-code" readonly style="height:120px"></textarea>
+                </div>
+                <div id="checkout-cartao">
+                    <div class="grid-two">
+                        <input id="cc-nome" placeholder="Nome no cartão">
+                        <input id="cc-numero" placeholder="Número do cartão">
+                        <input id="cc-validade" placeholder="Validade (MM/AA)">
+                        <input id="cc-cvv" placeholder="CVV">
+                    </div>
+                </div>
+                <div class="actions">
+                    <button onclick="pagar('pix')">Pagar com PIX</button>
+                    <button onclick="pagar('credito')">Crédito</button>
+                    <button class="ghost" onclick="pagar('debito')">Débito</button>
+                </div>
+                <div id="checkout-msg" class="muted"></div>
+            </div>
+        </div>
+
+        <div id="auth-modal" class="modal" style="display:none;">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div>
+                        <p class="eyebrow" id="auth-eyebrow">Bem-vindo</p>
+                        <h3 id="auth-title">Entrar</h3>
+                    </div>
+                    <button class="ghost" onclick="fecharAuth()">Fechar</button>
+                </div>
+                <div id="auth-form">
+                    <input id="auth-nome" placeholder="Nome completo">
+                    <input id="auth-doc" placeholder="CPF ou CNPJ">
+                    <input id="auth-oab" placeholder="OAB (opcional)">
+                    <input id="auth-email" placeholder="E-mail">
+                    <input id="auth-whats" placeholder="WhatsApp">
+                    <input id="auth-senha" placeholder="Senha" type="password">
+                    <div class="upload-logo" style="margin:8px 0;">
+                        <p class="label">Logo do escritório</p>
+                        <input type="file" accept="image/*" onchange="salvarLogoAuth(event)">
+                        <div id="auth-logo-preview" class="logo-preview">Sem logo</div>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button onclick="enviarAuth()">Continuar</button>
+                </div>
+                <div id="auth-msg" class="muted"></div>
+            </div>
+        </div>
+
+        <section class="grid-cards">
+            <div class="mini-card">
+                <p class="eyebrow">Timbre automático</p>
+                <h3>Envie sua logo uma única vez.</h3>
+                <p class="muted">Cada petição sai com cabeçalho personalizado e campos de assinatura no rodapé.</p>
+            </div>
+            <div class="mini-card">
+                <p class="eyebrow">Planos</p>
+                <h3>Mensal R$70 ou Pro R$150.</h3>
+                <p class="muted">Assinatura recorrente, cancelamento fácil e prioridade na fila de IA.</p>
+            </div>
+            <div class="mini-card">
+                <p class="eyebrow">Alertas</p>
+                <h3>Notifique clientes automaticamente.</h3>
+                <p class="muted">Importe andamento e dispare e-mails/WhatsApp com status traduzido.</p>
+            </div>
+            <div class="mini-card">
+                <p class="eyebrow">Checklist diário</p>
+                <h3>Agenda em um clique.</h3>
+                <p class="muted">Prazos, audiências e tarefas rápidas de cada cliente no mesmo painel.</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Ações rápidas flutuantes -->
+    <div class="fab-stack">
+        <button class="fab" onclick="mostrarTela(null,'peticao')" title="Nova petição">⚖️</button>
+        <button class="fab" onclick="mostrarTela(null,'honorarios')" title="Calcular honorários">💰</button>
+        <button class="fab" onclick="mostrarTela(null,'processos')" title="Monitorar processo">📂</button>
+        <button class="fab" onclick="abrirCheckout('pro',150)" title="Assinar Pro">💎</button>
+    </div>
+
+    <script>
+        let moduloAtual = '';
+        const API_URL = window.location.origin.includes("5500")
+            ? "http://127.0.0.1:8000"
+            : (window.location.origin || "http://127.0.0.1:8000");
+        let logoBase64 = localStorage.getItem('jurisday_logo') || '';
+        let planoSelecionado = { nome: '', valor: 0 };
+        let authMode = 'login';
+        let authLogo = '';
+        let isAuth = false;
+
+        const storedToken = localStorage.getItem('jurisday_token');
+        if (!storedToken) {
+            window.location.href = '/';
+        } else {
+            isAuth = true;
+        }
+
+        function authHeaders() {
+            const t = localStorage.getItem('jurisday_token');
+            return t ? { 'Authorization': `Bearer ${t}` } : {};
+        }
+
+        const previewEl = document.getElementById('preview-logo');
+        if (logoBase64) {
+            previewEl.style.backgroundImage = `url(${logoBase64})`;
+            previewEl.textContent = '';
+        }
+
+        function salvarLogo(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                logoBase64 = reader.result;
+                localStorage.setItem('jurisday_logo', logoBase64);
+                previewEl.style.backgroundImage = `url(${logoBase64})`;
+                previewEl.textContent = '';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function salvarLogoAuth(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                authLogo = reader.result;
+                const pv = document.getElementById('auth-logo-preview');
+                pv.style.backgroundImage = `url(${authLogo})`;
+                pv.textContent = '';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function abrirCheckout(plano, valor) {
+            planoSelecionado = { nome: plano, valor };
+            document.getElementById('checkout-plano').innerText = `Plano ${plano.toUpperCase()} — R$${valor}`;
+            document.getElementById('checkout-pix').style.display = 'none';
+            document.getElementById('checkout-cartao').style.display = 'block';
+            document.getElementById('checkout-msg').innerText = '';
+            document.getElementById('checkout-modal').style.display = 'block';
+        }
+
+        function fecharCheckout() {
+            document.getElementById('checkout-modal').style.display = 'none';
+        }
+
+        function mostrarTela(evt, modulo) {
+            moduloAtual = modulo;
+            const inputs = document.getElementById('inputs-dinamicos');
+            const titulo = document.getElementById('titulo-modulo');
+            const pill = document.getElementById('pill-modulo');
+            const actions = document.getElementById('btns-acao');
+            const downloadGroup = document.getElementById('download-group');
+            const resultado = document.getElementById('resultado-ia');
+
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
+
+            resultado.innerHTML = "";
+            downloadGroup.style.display = 'none';
+
+            if (['peticao','dicionario','detetive','honorarios','processos'].includes(modulo)) {
+                actions.style.display = 'flex';
+            } else {
+                actions.style.display = 'none';
+            }
+
+            if(modulo === 'peticao') {
+                titulo.innerText = "Redator de Petição IA";
+                pill.innerText = "PDF/Word + Timbre";
+                inputs.innerHTML = `
+                    <input id="cliente" placeholder="Nome do Cliente Principal">
+                    <input id="reu" placeholder="Nome da Parte Ré">
+                    <input id="juizo" placeholder="Juízo/vara competente (ex: Vara Cível de São Paulo)">
+                    <input id="tipo_acao" placeholder="Ex: Ação de Indenização por Danos Morais">
+                    <textarea id="fatos" placeholder="Descreva fatos, fundamentos e pedidos..." rows="6"></textarea>
+                `;
+            } else if(modulo === 'dicionario') {
+                titulo.innerText = "Consultoria de Termos & Leis";
+                pill.innerText = "Fundamentação";
+                inputs.innerHTML = `<input id="termo" placeholder="Digite o termo técnico ou artigo da lei...">`;
+            } else if(modulo === 'detetive') {
+                titulo.innerText = "Detetive de Ativos";
+                pill.innerText = "Rastreamento";
+                inputs.innerHTML = `
+                    <input id="alvo" placeholder="Nome do Devedor/Executado">
+                    <input id="documento" placeholder="CPF ou CNPJ">
+                `;
+            } else if(modulo === 'honorarios') {
+                titulo.innerText = "Calculadora de Honorários";
+                pill.innerText = "Contratuais & Sucumbenciais";
+                inputs.innerHTML = `
+                    <div class="grid-two">
+                        <input id="valor_causa" type="number" min="0" placeholder="Valor da causa (R$)">
+                        <input id="percentual" type="number" min="1" max="50" value="20" placeholder="% contratual">
+                        <input id="horas" type="number" min="0" placeholder="Horas estimadas">
+                        <input id="valor_hora" type="number" min="0" placeholder="Valor hora (R$)">
+                    </div>
+                    <div class="badge">Sugestão OAB + margem de êxito</div>
+                `;
+            } else if(modulo === 'notificacoes') {
+                titulo.innerText = "Notificações de Andamento";
+                pill.innerText = "Engaje clientes";
+                inputs.innerHTML = `
+                    <div class="list">
+                        <div class="list-item">
+                            <div>
+                                <strong>Alertas diários</strong>
+                                <p class="muted">Resumo do push do tribunal em linguagem simples.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="list-item">
+                            <div>
+                                <strong>WhatsApp automático</strong>
+                                <p class="muted">Mensagem pronta para o cliente quando houver movimentação.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="list-item">
+                            <div>
+                                <strong>E-mail com PDF</strong>
+                                <p class="muted">Anexe petição timbrada e último status.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                `;
+            } else if(modulo === 'planos') {
+                titulo.innerText = "Planos Mensais";
+                pill.innerText = "Escolha e valide";
+                inputs.innerHTML = `
+                    <div class="plan-grid">
+                        <div class="plan">
+                            <p class="eyebrow">Essencial</p>
+                            <h3>R$70/mês</h3>
+                            <ul>
+                                <li>50 petições/mês</li>
+                                <li>Honorários + Dicionário</li>
+                                <li>Suporte padrão</li>
+                            </ul>
+                            <button class="ghost" onclick="abrirCheckout('essencial',70)">Assinar Essencial</button>
+                        </div>
+                        <div class="plan destaque">
+                            <p class="eyebrow">Pro</p>
+                            <h3>R$150/mês</h3>
+                            <ul>
+                                <li>Petições ilimitadas</li>
+                                <li>Detetive de ativos</li>
+                                <li>Notificações automáticas</li>
+                                <li>Suporte prioritário</li>
+                            </ul>
+                            <button onclick="abrirCheckout('pro',150)">Assinar Pro</button>
+                        </div>
+                    </div>
+                `;
+            } else if(modulo === 'processos') {
+                titulo.innerText = "Monitoramento (JUS)";
+                pill.innerText = "Daily check";
+                inputs.innerHTML = `
+                    <div class="grid-two">
+                        <input id="proc_numero" placeholder="Número do processo">
+                        <input id="proc_tribunal" placeholder="Tribunal (TJSP, TRF3...)">
+                        <input id="proc_parte" placeholder="Parte representada">
+                        <input id="proc_tel" placeholder=\"Telefone do cliente (WhatsApp)\">
+                        <input id="proc_ref" placeholder="Referencia interna (cliente)">
+                    </div>
+                    <div class="actions" style="padding:0;">
+                        <button class="ghost" onclick="registrarProcesso()">Registrar monitoramento</button>
+                        <button class="ghost" onclick="rodarMonitoramento()">Rodar agora</button>
+                        <button class="ghost" onclick="listarProcessos()">Ver status</button>
+                        <button onclick="enviarResumo()">Enviar resumo WhatsApp</button>
+                    </div>
+                    <div id="status-processos" class="resultado" style="display:none;"></div>
+                `;
+            } else if(modulo === 'clientes') {
+                titulo.innerText = "Clientes e Processos";
+                pill.innerText = "Organização total";
+                inputs.innerHTML = `
+                    <div class="grid-two">
+                        <input id="cli_nome" placeholder="Nome do cliente">
+                        <input id="cli_doc" placeholder="CPF/CNPJ">
+                        <input id="cli_email" placeholder="E-mail">
+                        <input id="cli_whats" placeholder="WhatsApp">
+                        <input id="cli_proc" placeholder="Número do processo">
+                        <input id="cli_tribunal" placeholder="Tribunal">
+                    </div>
+                    <div class="actions" style="padding:0;">
+                        <button onclick="salvarCliente()">Cadastrar cliente</button>
+                        <button class="ghost" onclick="listarClientes()">Listar clientes</button>
+                    </div>
+                    <div id="clientes-box" class="resultado" style="display:none;"></div>
+                `;
+            }
+        }
+
+        async function executarIA() {
+            const loader = document.getElementById('loader');
+            const resultadoDiv = document.getElementById('resultado-ia');
+            const downloadGroup = document.getElementById('download-group');
+
+            loader.style.display = "block";
+            resultadoDiv.innerHTML = "";
+
+            let endpoint = '';
+            let payload = {};
+
+            if(moduloAtual === 'peticao') {
+                endpoint = 'peticao/gerar';
+                payload = {
+                    cliente_nome: document.getElementById('cliente').value,
+                    reu_nome: document.getElementById('reu').value,
+                    tipo_acao: document.getElementById('tipo_acao').value,
+                    fatos_relatados: document.getElementById('fatos').value,
+                    juizo_destino: document.getElementById('juizo')?.value || ''
+                };
+            } else if(moduloAtual === 'dicionario') {
+                endpoint = 'dicionario/consultar';
+                payload = { termo: document.getElementById('termo').value };
+            } else if(moduloAtual === 'detetive') {
+                endpoint = 'detetive/rastrear';
+                payload = { 
+                    nome_alvo: document.getElementById('alvo').value, 
+                    cpf_cnpj: document.getElementById('documento').value 
+                };
+            } else if(moduloAtual === 'honorarios') {
+                // Cálculo local sem backend
+                loader.style.display = "none";
+                resultadoDiv.innerHTML = calcularHonorarios();
+                downloadGroup.style.display = 'flex';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/${endpoint}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', ...authHeaders()},
+                    body: JSON.stringify(payload)
+                });
+                if(!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                loader.style.display = "none";
+                const textoFinal = data.peticao_texto || data.resposta || data.estrategia || 'Sem retorno';
+                resultadoDiv.innerHTML = montarSaida(textoFinal);
+                downloadGroup.style.display = 'flex';
+            } catch (error) {
+                loader.style.display = "none";
+                resultadoDiv.innerHTML = `<span style='color:#EF4444'>❌ Erro: ${error.message}</span>`;
+            }
+        }
+
+        function montarSaida(texto) {
+            const logoHtml = logoBase64 ? `<div class='timbre'><img src='${logoBase64}' alt='Logo'></div>` : '';
+            return `${logoHtml}<div class='texto'>${texto.replace(/\n/g, '<br>')}</div><div class='assinatura'>__________________________<br>Assinatura Digital</div>`;
+        }
+
+        function calcularHonorarios() {
+            const valor = Number(document.getElementById('valor_causa').value || 0);
+            const perc = Number(document.getElementById('percentual').value || 20);
+            const horas = Number(document.getElementById('horas').value || 0);
+            const valorHora = Number(document.getElementById('valor_hora').value || 0);
+
+            const contratual = valor * (perc / 100);
+            const horaTotal = horas * valorHora;
+            const sucumbencialMin = valor * 0.1;
+            const sucumbencialMax = valor * 0.2;
+
+            return `
+                <div class='calc-grid'>
+                    <div class='calc-card'>
+                        <p class='eyebrow'>Contratual</p>
+                        <h3>R$ ${contratual.toFixed(2)}</h3>
+                        <p class='muted'>Percentual acordado (${perc}%).</p>
+                    </div>
+                    <div class='calc-card'>
+                        <p class='eyebrow'>Hora técnica</p>
+                        <h3>R$ ${horaTotal.toFixed(2)}</h3>
+                        <p class='muted'>${horas}h x R$ ${valorHora.toFixed(2)}</p>
+                    </div>
+                    <div class='calc-card'>
+                        <p class='eyebrow'>Sucumbencial</p>
+                        <h3>R$ ${sucumbencialMin.toFixed(2)} - R$ ${sucumbencialMax.toFixed(2)}</h3>
+                        <p class='muted'>Faixa de 10% a 20% (CPC art. 85).</p>
+                    </div>
+                </div>
+                <div class='badge'>Sugestão: combine contratual + êxito escalonado.</div>
+            `;
+        }
+
+        async function registrarProcesso() {
+            try {
+                const body = {
+                    numero: document.getElementById('proc_numero').value,
+                    tribunal: document.getElementById('proc_tribunal').value,
+                    parte: document.getElementById('proc_parte').value,
+                    telefone_cliente: document.getElementById('proc_tel').value,
+                    referencia: document.getElementById('proc_ref').value
+                };
+                const resp = await fetch(`${API_URL}/monitorar/registrar`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', ...authHeaders()},
+                    body: JSON.stringify(body)
+                });
+                if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                alert('Processo registrado para monitoramento diário.');
+            } catch (e) { alert('Erro ao registrar: ' + e); }
+        }
+
+        async function rodarMonitoramento() {
+            try {
+                const resp = await fetch(`${API_URL}/monitorar/rodar`, {method:'POST', headers: authHeaders()});
+                const data = await resp.json();
+                renderProcessos(data.processos || []);
+            } catch (e) { alert('Erro ao rodar: ' + e); }
+        }
+
+        async function listarProcessos() {
+            try {
+                const resp = await fetch(`${API_URL}/monitorar/status`, {headers: authHeaders()});
+                const data = await resp.json();
+                renderProcessos(data.processos || []);
+            } catch (e) { alert('Erro ao listar: ' + e); }
+        }
+
+        function renderProcessos(lista) {
+            const box = document.getElementById('status-processos');
+            if (!box) return;
+            if (!lista.length) { box.style.display='block'; box.innerHTML='Nenhum processo monitorado.'; return; }
+            box.style.display = 'block';
+            box.innerHTML = lista.map(p => `
+                <div class='list-item'>
+                    <div><strong>${p.numero}</strong><br><span class='muted'>${p.tribunal} · ${p.parte}</span></div>
+                    <div class='muted'>${p.status || 'pendente'}<br>${p.ultimo_andamento || ''}</div>
+                </div>`).join('');
+        }
+
+        async function enviarResumo() {
+            try {
+                const resp = await fetch(`${API_URL}/monitorar/resumo`, {method:'POST', headers: authHeaders()});
+                const data = await resp.json();
+                const msg = data.mensagem || '';
+                alert('Resumo preparado. ' + (data.envios?.length ? 'Envios processados.' : 'Configure webhook para envio real.'));
+                renderProcessos(data.envios || []);
+                const box = document.getElementById('status-processos');
+                if (box && msg) box.innerHTML = `<div class='muted'>Mensagem gerada:</div><div class='resultado'>${msg.replace(/\\n/g,'<br>')}</div>`;
+            } catch (e) { alert('Erro ao enviar resumo: ' + e); }
+        }
+
+        async function pagar(metodo) {
+            try {
+                const payload = {
+                    plano: planoSelecionado.nome,
+                    valor: planoSelecionado.valor,
+                    metodo,
+                    nome_titular: document.getElementById('cc-nome').value,
+                    numero_cartao: document.getElementById('cc-numero').value,
+                    validade: document.getElementById('cc-validade').value,
+                    cvv: document.getElementById('cc-cvv').value,
+                };
+                const resp = await fetch(`${API_URL}/planos/checkout`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+                if (data.metodo === 'pix') {
+                    document.getElementById('checkout-pix').style.display = 'block';
+                    document.getElementById('checkout-cartao').style.display = 'none';
+                    document.getElementById('pix-code').value = data.codigo_pix;
+                }
+                document.getElementById('checkout-msg').innerText = data.mensagem || 'Processado.';
+            } catch (e) {
+                document.getElementById('checkout-msg').innerText = 'Erro no pagamento: ' + e.message;
+            }
+        }
+
+        function abrirAuth(mode) {
+            authMode = mode;
+            document.getElementById('auth-modal').style.display = 'grid';
+            document.getElementById('auth-title').innerText = mode === 'signup' ? 'Cadastro' : 'Login';
+            document.getElementById('auth-eyebrow').innerText = mode === 'signup' ? 'Crie sua conta' : 'Bem-vindo de volta';
+            document.getElementById('auth-nome').style.display = mode === 'signup' ? 'block' : 'none';
+            document.getElementById('auth-oab').style.display = mode === 'signup' ? 'block' : 'none';
+        }
+
+        function fecharAuth() {
+            document.getElementById('auth-modal').style.display = 'none';
+        }
+
+        async function enviarAuth() {
+            const emailDoc = document.getElementById('auth-email').value || document.getElementById('auth-doc').value;
+            const senha = document.getElementById('auth-senha').value;
+            try {
+                if (authMode === 'signup') {
+                    const payload = {
+                        nome_completo: document.getElementById('auth-nome').value,
+                        cpf_cnpj: document.getElementById('auth-doc').value,
+                        oab: document.getElementById('auth-oab').value,
+                        email: document.getElementById('auth-email').value,
+                        whatsapp: document.getElementById('auth-whats').value,
+                        senha,
+                        plano: 'Trial',
+                        logo_base64: authLogo || logoBase64
+                    };
+                    const resp = await fetch(`${API_URL}/auth/cadastrar`, {
+                        method: 'POST', headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify(payload)
+                    });
+                    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    document.getElementById('auth-msg').innerText = 'Cadastro realizado. Faça login.';
+                } else {
+                    const resp = await fetch(`${API_URL}/auth/login`, {
+                        method: 'POST', headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({ email_ou_cnpj: emailDoc, senha })
+                    });
+                    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const data = await resp.json();
+                    localStorage.setItem('jurisday_token', data.token);
+                    localStorage.setItem('jurisday_user', data.nome);
+                    localStorage.setItem('last_login_email', emailDoc);
+                    document.getElementById('auth-msg').innerText = 'Login ok.';
+                    isAuth = true;
+                    document.getElementById('dashboard').style.display = 'block';
+                    fecharAuth();
+                    mostrarTela(null,'peticao');
+                }
+            } catch (e) {
+                document.getElementById('auth-msg').innerText = 'Erro: ' + e.message;
+            }
+        }
+
+        async function salvarCliente() {
+            try {
+                const payload = {
+                    nome: document.getElementById('cli_nome').value,
+                    cpf_cnpj: document.getElementById('cli_doc').value,
+                    email: document.getElementById('cli_email').value,
+                    whatsapp: document.getElementById('cli_whats').value,
+                    numero_processo: document.getElementById('cli_proc').value,
+                    tribunal: document.getElementById('cli_tribunal').value
+                };
+                const resp = await fetch(`${API_URL}/clientes/cadastrar`, {
+                    method: 'POST', headers: {'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify(payload)
+                });
+                if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                alert('Cliente cadastrado.');
+            } catch (e) { alert('Erro ao salvar cliente: ' + e); }
+        }
+
+        async function listarClientes() {
+            try {
+                const resp = await fetch(`${API_URL}/clientes/listar`, {headers: authHeaders()});
+                if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+                const box = document.getElementById('clientes-box');
+                box.style.display='block';
+                box.innerHTML = data.clientes.map(c => `<div class='list-item'><div><strong>${c.nome}</strong><br>${c.cpf_cnpj}</div><div class='muted'>${c.numero_processo} · ${c.tribunal}</div></div>`).join('') || 'Nenhum cliente';
+            } catch (e) { alert('Erro ao listar clientes: ' + e); }
+        }
+
+        async function baixar(formato) {
+            const resultadoDiv = document.getElementById('resultado-ia');
+            const texto = resultadoDiv.innerText.trim();
+            if (!texto) return;
+            try {
+                const resp = await fetch(`${API_URL}/peticao/exportar`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ texto, formato })
+                });
+                if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const blob = await resp.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const ext = formato === 'doc' ? 'docx' : formato;
+                a.href = url;
+                a.download = `jurisday-${moduloAtual}.${ext}`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (e) {
+                alert('Falha ao exportar: ' + e);
+            }
+        }
+
+        // tela inicial
+        mostrarTela(null, 'peticao');
+    </script>
+</body>
+</html>

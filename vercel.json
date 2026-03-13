@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "name": "jurisday-frontend",
+  "builds": [
+    { "src": "frontend/**/*", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/(auth|peticao|dicionario|detetive|honorarios|suporte|monitorar|planos|clientes|prazos|calculadora)(/.*)?", "dest": "https://SEU_BACKEND_API/$1$2" },
+    { "src": "/static/(.*)", "dest": "/frontend/$1" },
+    { "src": "/app", "dest": "/frontend/index.html" },
+    { "src": "/", "dest": "/frontend/index.html" }
+  ]
+}

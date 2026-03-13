@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+python-docx
+requests
+pydantic
+google-generativeai
+python-multipartfpdf2
+pytest
+httpx
+apscheduler
+sqlalchemy
+psycopg2-binary
+passlib[bcrypt]
+pyjwt
+email-validator

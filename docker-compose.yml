@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: jurisday
+      POSTGRES_PASSWORD: jurisday
+      POSTGRES_DB: jurisday
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  api:
+    build: .
+    command: uvicorn backend_api.main:app --host 0.0.0.0 --port 8000
+    environment:
+      DATABASE_URL: postgresql+psycopg2://jurisday:jurisday@db:5432/jurisday
+      GOOGLE_GENAI_KEY: ${GOOGLE_GENAI_KEY}
+      JUS_API_URL: ${JUS_API_URL}
+      JUS_API_TOKEN: ${JUS_API_TOKEN}
+      WHATSAPP_WEBHOOK_URL: ${WHATSAPP_WEBHOOK_URL}
+      PAGARME_API_KEY: ${PAGARME_API_KEY}
+      PAGARME_BASE_URL: ${PAGARME_BASE_URL}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-*}
+    volumes:
+      - ./:/app
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+
+volumes:
+  db_data:

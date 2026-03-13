@@ -1,0 +1,17 @@
+# Fly.io app configuration for JURISDAY
+
+app = "jurisday"
+primary_region = "gru" # São Paulo; troque se quiser outra região próxima
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"  # Fly roteia para 8080 por padrão; Dockerfile lê ${PORT} e uvicorn usa isso
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1

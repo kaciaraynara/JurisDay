@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>JURISDAY | Cadastro</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="auth-shell">
+    <div class="auth-grid">
+      <div class="auth-hero">
+        <span class="eyebrow-badge">Onboarding em minutos</span>
+        <h1>Cadastro profissional do advogado</h1>
+        <p class="sub">Trial de 7 dias, logo opcional e segurança com criptografia e controle de sessão.</p>
+        <ul class="bullet-list">
+          <li><span class="bullet-dot">•</span>Campos essenciais: nome, e-mail ou CPF/CNPJ, senha.</li>
+          <li><span class="bullet-dot">•</span>OAB é opcional (pode ser preenchida depois).</li>
+          <li><span class="bullet-dot">•</span>Logo do escritório para timbre automático nas petições.</li>
+        </ul>
+        <div class="hero-actions" style="margin-top:24px;">
+          <button class="ghost" onclick="window.location.href='/static/login.html'">Já tenho conta</button>
+        </div>
+      </div>
+
+      <div class="auth-card">
+        <div class="card-header" style="justify-content: space-between;">
+          <div>
+            <p class="eyebrow">Cadastro</p>
+            <h2>Criar conta</h2>
+          </div>
+          <div class="pill">Trial 7 dias</div>
+        </div>
+        <div class="form-grid two">
+          <div>
+            <label for="cad-nome">Nome completo</label>
+            <input id="cad-nome" placeholder="Ex: Dra. Ana Souza">
+          </div>
+          <div>
+            <label for="cad-doc">CPF ou CNPJ</label>
+            <input id="cad-doc" placeholder="000.000.000-00 ou 00.000.000/0001-00">
+          </div>
+          <div>
+            <label for="cad-email">E-mail</label>
+            <input id="cad-email" placeholder="email@escritorio.com">
+          </div>
+          <div>
+            <label for="cad-whats">WhatsApp</label>
+            <input id="cad-whats" placeholder="(11) 99999-0000">
+          </div>
+          <div>
+            <label for="cad-oab">OAB (opcional)</label>
+            <input id="cad-oab" placeholder="UF123456">
+          </div>
+          <div>
+            <label for="cad-senha">Senha</label>
+            <input id="cad-senha" type="password" placeholder="Crie uma senha forte">
+          </div>
+        </div>
+        <div class="logo-upload" style="margin:14px 0;">
+          <p class="label">Logo do escritório (opcional)</p>
+          <input type="file" accept="image/*" onchange="salvarLogo(event)">
+          <div id="logo-preview" class="logo-preview">Sem logo</div>
+        </div>
+        <div class="actions">
+          <button id="btn-cad" onclick="cadastrar()">Criar conta</button>
+          <button class="ghost" onclick="window.location.href='/static/login.html'">Voltar ao login</button>
+        </div>
+        <div id="cad-msg" class="muted"></div>
+        <div id="cad-loader" class="loader" style="display:none;">Processando...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = ""; // mesma origem do front
+    let logoBase64 = '';
+
+    function salvarLogo(ev){
+      const f = ev.target.files[0]; if(!f) return;
+      const r = new FileReader();
+      r.onload=()=>{
+        logoBase64 = r.result;
+        const pv=document.getElementById('logo-preview');
+        pv.style.backgroundImage=`url(${logoBase64})`; pv.textContent='';
+      };
+      r.readAsDataURL(f);
+    }
+
+    async function cadastrar(){
+      const msg = document.getElementById('cad-msg');
+      const loader = document.getElementById('cad-loader');
+      const btn = document.getElementById('btn-cad');
+      msg.innerText=''; loader.style.display='block'; btn.disabled=true;
+      try{
+        const payload = {
+          nome_completo: document.getElementById('cad-nome').value,
+          cpf_cnpj: document.getElementById('cad-doc').value,
+          oab: document.getElementById('cad-oab').value,
+          email: document.getElementById('cad-email').value,
+          whatsapp: document.getElementById('cad-whats').value,
+          senha: document.getElementById('cad-senha').value,
+          plano: 'Trial',
+          logo_base64: logoBase64
+        };
+        const resp = await fetch(`${API_URL}/auth/cadastrar`, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+        if(!resp.ok) throw new Error(`Erro ${resp.status}`);
+        msg.innerText='Cadastro criado. Faça login para acessar.';
+      }catch(e){
+        msg.innerText='Erro: '+e.message;
+      }finally{
+        loader.style.display='none'; btn.disabled=false;
+      }
+    }
+  </script>
+</body>
+</html>
