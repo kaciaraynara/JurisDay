@@ -4,7 +4,8 @@ python-docx
 requests
 pydantic
 google-generativeai
-python-multipartfpdf2
+python-multipart
+fpdf2
 pytest
 httpx
 apscheduler
