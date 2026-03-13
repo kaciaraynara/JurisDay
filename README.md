@@ -20,7 +20,7 @@ Stack: FastAPI + JWT, Pagar.me (cartão/PIX), FPDF2, APScheduler, frontend está
 - Banco: `DATABASE_URL` (se vazio usa SQLite local).
 - IA: `GOOGLE_GENAI_KEY`.
 - JUS/WhatsApp: `JUS_API_URL`, `JUS_API_TOKEN`, `WHATSAPP_WEBHOOK_URL`.
-- Pagamentos: `PAGARME_API_KEY`, `PAGARME_BASE_URL`, `PAGARME_WEBHOOK_SECRET` (assinar webhooks). Ou `PAGSEGURO_TOKEN`, `PAGSEGURO_BASE_URL` para PIX via PagSeguro (cartão ainda não habilitado neste fluxo).
+- Pagamentos: PagSeguro (PIX e cartão): `PAGSEGURO_TOKEN`, `PAGSEGURO_BASE_URL` (use sandbox ou produção).
 - Auth: `JWT_SECRET` (>=32 chars), `JWT_EXPIRE_MINUTES`.
 - Monitoramento: `MONITOR_INTERVAL_MINUTES`, `MONITOR_DB_PATH`.
 - Trial: `TRIAL_DIAS` (padrão 7).
