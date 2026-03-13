@@ -14,6 +14,8 @@ PAGARME_BASE_URL = os.getenv("PAGARME_BASE_URL", "https://api.pagar.me/core/v5")
 PAGARME_WEBHOOK_SECRET = os.getenv("PAGARME_WEBHOOK_SECRET")
 LOG_PATH = os.getenv("PAGAMENTOS_LOG_PATH", "./data/pagamentos.log")
 TRIAL_DIAS = int(os.getenv("TRIAL_DIAS", "7"))
+PAGSEGURO_TOKEN = os.getenv("PAGSEGURO_TOKEN")
+PAGSEGURO_BASE_URL = os.getenv("PAGSEGURO_BASE_URL", "https://api.pagseguro.com")
 
 _pagamentos_memoria = {}
 
@@ -129,6 +131,56 @@ def _pagarme_checkout(dados: CheckoutSchema):
         return None
 
 
+def _pagseguro_checkout(dados: CheckoutSchema):
+    """
+    Integração básica PagSeguro: suporta PIX real se PAGSEGURO_TOKEN estiver definido.
+    Cartão permanece em simulação para evitar tokenização client-side neste MVP.
+    """
+    if not PAGSEGURO_TOKEN:
+        return None
+    if dados.metodo != "pix":
+        return None  # só PIX no fluxo PagSeguro por enquanto
+
+    headers = {
+        "Authorization": f"Bearer {PAGSEGURO_TOKEN}",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    ref_id = str(uuid.uuid4())[:18]
+    payload = {
+        "reference_id": ref_id,
+        "description": f"Plano {dados.plano}",
+        "amount": {"value": int(dados.valor * 100), "currency": "BRL"},
+        "payment_method": {"type": "PIX"},
+        "notification_urls": [],  # pode adicionar webhook se desejar
+    }
+    try:
+        resp = requests.post(f"{PAGSEGURO_BASE_URL}/charges", json=payload, headers=headers, timeout=20)
+        if resp.status_code >= 400:
+            raise HTTPException(status_code=resp.status_code, detail=resp.text)
+        data = resp.json()
+        qr = ""
+        try:
+            qr = data.get("payment_response", {}).get("qr_codes", [{}])[0].get("text", "")
+        except Exception:
+            qr = ""
+        return {
+            "status": data.get("status", "pending"),
+            "transacao_id": data.get("id", ref_id),
+            "metodo": "pix",
+            "codigo_pix": qr,
+            "mensagem": "Use o copia e cola para pagar por PIX (PagSeguro).",
+            "trial": True,
+            "trial_dias": TRIAL_DIAS,
+            "cobrar_em": (datetime.now(timezone.utc) + timedelta(days=TRIAL_DIAS)).date().isoformat(),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"⚠️ Erro PagSeguro, caindo para simulação: {e}")
+        return None
+
+
 def _pagarme_status(transacao_id: str):
     """Consulta status da transação/charge no Pagar.me."""
     if not PAGARME_API_KEY:
@@ -176,6 +228,7 @@ async def checkout(dados: CheckoutSchema):
         raise HTTPException(status_code=400, detail="Método inválido")
 
     transacao_id = str(uuid.uuid4())
+    prefer_real = bool(PAGARME_API_KEY or PAGSEGURO_TOKEN)
 
     # tenta pagar.me se chave presente
     pagarme_result = _pagarme_checkout(dados)
@@ -183,7 +236,19 @@ async def checkout(dados: CheckoutSchema):
         _pagamentos_memoria[pagarme_result["transacao_id"]] = pagarme_result["status"]
         return pagarme_result
 
-    # fallback simulado
+    # tenta PagSeguro (PIX) se chave presente
+    pagseguro_result = _pagseguro_checkout(dados)
+    if pagseguro_result:
+        _pagamentos_memoria[pagseguro_result["transacao_id"]] = pagseguro_result["status"]
+        return pagseguro_result
+
+    # se há provedores configurados mas falhou, não simular
+    if prefer_real:
+        if dados.metodo != "pix":
+            raise HTTPException(status_code=400, detail="Cartão não habilitado ainda. Use PIX.")
+        raise HTTPException(status_code=502, detail="Pagamento não processado. Tente novamente.")
+
+    # fallback simulado (modo demo)
     if dados.metodo == "pix":
         result = _simular_pix(dados.valor, transacao_id)
     else:
