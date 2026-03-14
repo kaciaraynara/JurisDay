@@ -1,7 +1,7 @@
 import os
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import google.generativeai as genai
+import google.genai as genai
 from io import BytesIO
 from fastapi.responses import StreamingResponse
 from docx import Document

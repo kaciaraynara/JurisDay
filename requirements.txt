@@ -3,7 +3,7 @@ uvicorn
 python-docx
 requests
 pydantic
-google-generativeai
+google-genai
 python-multipart
 fpdf2
 pytest
