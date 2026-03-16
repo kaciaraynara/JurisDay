@@ -1,23 +1,18 @@
 import os
 import requests
 from typing import List, Dict
-
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-try:
-    from ..db import SessionLocal, engine
-    from .. import models
-    from ..models import Processo
-    from .auth import get_current_advogado
-except ImportError:
-    # fallback para execução direta de dentro da pasta backend_api
-    from db import SessionLocal, engine  # type: ignore
-    import models  # type: ignore
-    from models import Processo  # type: ignore
-    from routers.auth import get_current_advogado  # type: ignore
-from pydantic import BaseModel
+# IMPORTAÇÃO LIMPA PARA O RENDER
+from db import SessionLocal, engine
+import models
+from models import Processo
+from routers.auth import get_current_advogado
+
+# models.Base.metadata.create_all(bind=engine)
 
 # models.Base.metadata.create_all(bind=engine)
 
