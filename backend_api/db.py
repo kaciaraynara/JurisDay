@@ -14,3 +14,10 @@ engine = create_engine(SQLALCHEMY_DATABASE_URL or "sqlite:///./local.db")
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+# Adicione isso ao final do seu db.py
+def obter_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

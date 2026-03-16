@@ -1,19 +1,15 @@
 import os
 from datetime import datetime, timedelta, timezone
+import jwt
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
-import jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
-# Import compatível com execução como pacote ou dentro da pasta backend_api
-try:
-    from backend_api.db import obter_db
-    import backend_api.models as models
-except ImportError:
-    from db import obter_db  # type: ignore
-    import models as models  # type: ignore
+# IMPORTAÇÃO DIRETA E LIMPA PARA O RENDER
+from db import obter_db
+import models
 
 router = APIRouter()
 
