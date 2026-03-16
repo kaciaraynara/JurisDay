@@ -1,16 +1,16 @@
 import os
-import urllib.parse
 from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
-raw_uri = os.getenv("DATABASE_URL")
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
-if raw_uri:
-    # Ajuste o protocolo
-    if raw_uri.startswith("postgres://"):
-        raw_uri = raw_uri.replace("postgres://", "postgresql://", 1)
-    
-    # Se a senha tiver caracteres como @ ou !, isso aqui protege a conexão
-    # O Render fornece a URL pronta, mas vamos garantir:
-    engine = create_engine(raw_uri, pool_pre_ping=True)
-else:
-    engine = create_engine("sqlite:///./local.db")
+if SQLALCHEMY_DATABASE_URL and SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
+    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+engine = create_engine(SQLALCHEMY_DATABASE_URL or "sqlite:///./local.db")
+
+# O NOME PRECISA SER ESTE:
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()

@@ -14,8 +14,6 @@ from routers.auth import get_current_advogado
 
 # models.Base.metadata.create_all(bind=engine)
 
-# models.Base.metadata.create_all(bind=engine)
-
 router = APIRouter()
 
 JUS_API_URL = os.getenv("JUS_API_URL", "https://api.jusplaceholder.local")
