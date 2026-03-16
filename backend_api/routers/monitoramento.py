@@ -19,7 +19,7 @@ except ImportError:
     from routers.auth import get_current_advogado  # type: ignore
 from pydantic import BaseModel
 
-models.Base.metadata.create_all(bind=engine)
+# models.Base.metadata.create_all(bind=engine)
 
 router = APIRouter()
 
