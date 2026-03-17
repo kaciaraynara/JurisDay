@@ -35,30 +35,19 @@ app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 # --- 4. IMPORTAÇÃO DOS MÓDULOS (SÓ APÓS O SYS.PATH) ---
 from routers import (
     auth,
-    monitoramento,
     peticoes,
-    dicionario,
-    detetive,
-    honorarios,
     pagamentos,
     clientes,
-    prazos,
-    calculadora,
     suporte,
 )
 from backend_api import models
 from backend_api.db import engine
+from sqlalchemy import text
 
 app.include_router(auth.router, prefix="/auth", tags=["Autenticação"])
-app.include_router(monitoramento.router, prefix="/monitorar", tags=["Monitoramento"])
 app.include_router(peticoes.router, prefix="/peticao", tags=["Inteligência Artificial"])
-app.include_router(dicionario.router, prefix="/dicionario", tags=["Dicionário"])
-app.include_router(detetive.router, prefix="/detetive", tags=["Detetive"])
-app.include_router(honorarios.router, prefix="/honorarios", tags=["Honorários"])
 app.include_router(pagamentos.router, prefix="/planos", tags=["Planos e Checkout"])
 app.include_router(clientes.router, prefix="/clientes", tags=["Clientes"])
-app.include_router(prazos.router, prefix="/prazos", tags=["Prazos"])
-app.include_router(calculadora.router, prefix="/calculadora", tags=["Calculadora"])
 app.include_router(suporte.router, prefix="/suporte", tags=["Suporte"])
 
 # --- 5. ROTAS DE NAVEGAÇÃO ---
@@ -67,6 +56,17 @@ app.include_router(suporte.router, prefix="/suporte", tags=["Suporte"])
 def criar_tabelas():
     # Garante que as tabelas existam no banco antes de qualquer login/cadastro.
     models.Base.metadata.create_all(bind=engine)
+    # Ajustes leves de schema no Postgres para novas colunas (sem apagar dados).
+    if engine.dialect.name == "postgresql":
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS endereco VARCHAR"))
+            conn.execute(text("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS numero_processo VARCHAR"))
+            conn.execute(text("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS tribunal VARCHAR"))
+            conn.execute(text("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS andamento_atual TEXT"))
+            conn.execute(text("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS ultima_atualizacao TIMESTAMP"))
+            conn.execute(text("ALTER TABLE processos ADD COLUMN IF NOT EXISTS parte VARCHAR"))
+            conn.execute(text("ALTER TABLE processos ADD COLUMN IF NOT EXISTS telefone_cliente VARCHAR"))
+            conn.execute(text("ALTER TABLE processos ADD COLUMN IF NOT EXISTS referencia VARCHAR"))
 
 @app.get("/")
 async def serve_login():

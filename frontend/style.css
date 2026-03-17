@@ -187,7 +187,8 @@ button:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(212, 175, 55, 0
 .auth-card .form-grid.two { grid-template-columns: 1fr 1fr; }
 .auth-card .form-grid.two > div { display: flex; flex-direction: column; gap: 6px; }
 .auth-card label { font-size: 13px; color: var(--slate-300); }
-.logo-upload {
+.logo-upload,
+.upload-logo {
     border: 1px dashed rgba(255,255,255,0.15);
     border-radius: 12px;
     padding: 12px;
@@ -224,6 +225,8 @@ button { font-family: var(--font-sans); }
 .grid-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 20px 0; }
 .mini-card { background: rgba(16,23,42,0.6); border: 1px solid rgba(255,255,255,0.06); padding: 16px; border-radius: 14px; }
 .plan-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.plan-grid.single { grid-template-columns: 1fr; }
+.plan-grid.single .plan { max-width: 420px; margin: 0 auto; }
 .plan { background: rgba(16,23,42,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 16px; }
 .plan.destaque { border-color: rgba(212,175,55,0.4); box-shadow: 0 0 0 1px rgba(212,175,55,0.2); }
 .list { display: grid; gap: 12px; }

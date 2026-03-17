@@ -45,6 +45,14 @@ class AdvogadoCreate(BaseModel):
             return "A senha deve conter ao menos um caractere especial."
         return None
 
+
+class PerfilUpdate(BaseModel):
+    nome_completo: str | None = None
+    oab: str | None = None
+    whatsapp: str | None = None
+    email: EmailStr | None = None
+    logo_base64: str | None = None
+
 # --- FUNÇÕES DE SEGURANÇA (UTILIZADAS POR OUTROS ROUTERS) ---
 
 def get_current_advogado(
@@ -112,3 +120,32 @@ def login(payload: dict, db: Session = Depends(obter_db)):
     exp = datetime.now(timezone.utc) + timedelta(minutes=JWT_EXPIRE_MIN)
     token = jwt.encode({"sub": str(user.id), "exp": exp}, JWT_SECRET, algorithm=JWT_ALG)
     return {"token": token, "nome": user.nome_completo, "expires_in": JWT_EXPIRE_MIN * 60}
+
+
+@router.get("/perfil")
+def perfil(usuario=Depends(get_current_advogado)):
+    return {
+        "id": usuario.id,
+        "nome_completo": usuario.nome_completo,
+        "email": usuario.email,
+        "oab": usuario.oab,
+        "whatsapp": usuario.whatsapp,
+        "logo_base64": usuario.logo_base64,
+    }
+
+
+@router.put("/perfil")
+def atualizar_perfil(
+    payload: PerfilUpdate,
+    db: Session = Depends(obter_db),
+    usuario=Depends(get_current_advogado),
+):
+    if payload.email and payload.email != usuario.email:
+        if db.query(models.Advogado).filter(models.Advogado.email == payload.email).first():
+            raise HTTPException(status_code=400, detail="Este e-mail já está em uso.")
+
+    for campo, valor in payload.model_dump(exclude_unset=True).items():
+        setattr(usuario, campo, valor)
+    db.commit()
+    db.refresh(usuario)
+    return {"ok": True}
