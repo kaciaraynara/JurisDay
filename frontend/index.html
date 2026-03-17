@@ -3,144 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JURISDAY | Inteligência Jurídica Estratégica</title>
+    <title>JURISDAY | Acesso</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="manifest" href="/static/manifest.json">
     <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
 </head>
 <body>
-
-    <div class="sidebar">
-        <div class="logo">JURISDAY</div>
-        <nav>
-            <button type="button" class="menu-item" onclick="mostrarTela(event,'peticao')">Redação de Petições</button>
-            <button type="button" class="menu-item" onclick="mostrarTela(event,'dicionario')">Consulta Jurídica</button>
-            <button type="button" class="menu-item" onclick="mostrarTela(event,'detetive')">Rastreamento de Ativos</button>
-            <button type="button" class="menu-item" onclick="mostrarTela(event,'honorarios')">Gestão de Honorários</button>
-            <button type="button" class="menu-item" onclick="mostrarTela(event,'notificacoes')">Painel de Alertas</button>
-            <button type="button" class="menu-item" onclick="mostrarTela(event,'planos')">Assinaturas</button>
-            <button type="button" class="menu-item" onclick="mostrarTela(event,'processos')">Monitoramento Processual</button>
-            <button type="button" class="menu-item" onclick="mostrarTela(event,'clientes')">Base de Clientes</button>
-        </nav>
-
-        <div class="upload-logo">
-            <p class="label">Identidade Visual</p>
-            <input type="file" accept="image/*" onchange="salvarLogo(event)">
-            <div id="preview-logo" class="logo-preview">Logotipo não configurado</div>
-        </div>
-
-        <div class="sidebar-footer">
-            © 2026 JURISDAY<br>Suporte Tecnológico ao Advogado
-        </div>
-    </div>
-
-    <div class="main-content" id="dashboard">
-        <header class="hero">
-            <div>
-                <p class="eyebrow">Solução Corporativa</p>
-                <h1>Tecnologia avançada para redação jurídica e gestão de prazos processuais.</h1>
-                <p class="sub">
-                    • Engenharia de Petições: Peças fundamentadas conforme o Art. 319 do CPC.<br>
-                    • Vigilância Processual: Monitoramento em tribunais com alertas automatizados.<br>
-                    • Inteligência Financeira: Cálculos baseados na tabela da OAB e ativos recuperáveis.<br>
-                    • Gestão de Relacionamento: Interface otimizada para acompanhamento de clientes.
-                </p>
-                <div class="hero-actions">
-                    <button onclick="window.location.href='signup.html'">Iniciar Período de Teste</button>
-                    <button class="ghost" onclick="window.location.href='login.html'">Acessar Sistema</button>
-                    <button class="ghost" onclick="mostrarTela(null,'planos')">Modelos de Negócio</button>
-                </div>
-            </div>
-            <div class="stats">
-                <div class="stat"><span>01.</span> Redação estruturada com timbre e assinatura eletrônica.</div>
-                <div class="stat"><span>02.</span> Alertas de prazos via multicanais em linguagem técnica e clara.</div>
-                <div class="stat"><span>03.</span> Auditoria de honorários e rastreio via sistemas judiciais.</div>
-                <div class="stat"><span>04.</span> Centralização de dados e transparência processual.</div>
-            </div>
-        </header>
-
-        <section class="grid-cards" style="margin-top:0;">
-            <div class="mini-card">
-                <p class="eyebrow">Direito Processual</p>
-                <h3>Peças de Alta Performance</h3>
-                <p class="muted">Redação automatizada para iniciais, contestações e recursos com revisão de fundamentos.</p>
-            </div>
-            <div class="mini-card">
-                <p class="eyebrow">Monitoramento</p>
-                <h3>Segurança de Prazos</h3>
-                <p class="muted">Integração com PJE, Projudi e e-SAJ para tradução de andamentos processuais.</p>
-            </div>
-            <div class="mini-card">
-                <p class="eyebrow">Finanças</p>
-                <h3>Auditoria de Ativos</h3>
-                <p class="muted">Análise de viabilidade econômica e identificação de patrimônio via SISBAJUD e RENAJUD.</p>
-            </div>
-            <div class="mini-card">
-                <p class="eyebrow">Compliance</p>
-                <h3>Portal do Cliente</h3>
-                <p class="muted">Repositório seguro de documentos e status em tempo real para o constituinte.</p>
-            </div>
-        </section>
-
-        <div class="card" id="card-dinamico">
-            <div class="card-header">
-                <h2 id="titulo-modulo">Módulos do Sistema</h2>
-                <div id="pill-modulo" class="pill">Tecnologia Certificada</div>
-                <div class="auth-actions">
-                    <button class="ghost" onclick="window.location.href='login.html'">Conectar</button>
-                    <button onclick="window.location.href='signup.html'">Criar Conta</button>
-                    <button class="ghost" onclick="sair()">Encerrar Sessão</button>
-                </div>
-            </div>
-            
-            <div id="inputs-dinamicos" class="grid-two">
-                <p class="muted">Selecione uma ferramenta no menu lateral para iniciar a operação. Documentos exportáveis em PDF e DOCX.</p>
-            </div>
-            
-            <div id="btns-acao" class="actions" style="display:none;">
-                <button id="btn-acao" onclick="executarIA()">Executar Inteligência Artificial</button>
-                <div class="download-group" id="download-group" style="display:none;">
-                    <button class="ghost" onclick="baixar('doc')">Exportar para Word</button>
-                    <button class="ghost" onclick="baixar('pdf')">Exportar para PDF</button>
-                </div>
-            </div>
-            
-            <div id="loader" class="loader" style="display:none;">Processando requisição jurídica via IA...</div>
-            <div id="resultado-ia" class="resultado"></div>
-        </div>
-    </div>
-
-    <div class="fab-stack">
-        <button class="fab" onclick="mostrarTela(null,'peticao')" title="Nova petição">⚖️</button>
-        <button class="fab" onclick="abrirSuporte()" title="Suporte Técnico">💬</button>
-    </div>
-
-    <div id="suporte-modal" class="modal" style="display:none;">
-        <div class="modal-card">
-            <div class="modal-header">
-                <div>
-                    <p class="eyebrow">Central de Ajuda</p>
-                    <h3>Relatar Incidente ou Dúvida</h3>
-                </div>
-                <button class="ghost" onclick="fecharSuporte()">Fechar</button>
-            </div>
-            <div class="grid-two">
-                <input id="sup-nome" placeholder="Nome Completo">
-                <input id="sup-email" placeholder="E-mail Institucional">
-            </div>
-            <textarea id="sup-msg" rows="5" placeholder="Descreva a situação detalhadamente."></textarea>
-            <div class="actions">
-                <button onclick="enviarSuporte()">Enviar Relatório</button>
-                <div id="sup-status" class="muted"></div>
-            </div>
+    <div class="main-content" style="min-height:100vh;display:flex;align-items:center;justify-content:center;">
+        <div class="card" style="max-width:520px;text-align:center;">
+            <h2>Redirecionando...</h2>
+            <p class="muted">Aguarde enquanto abrimos a tela de login.</p>
         </div>
     </div>
 
     <script>
-        // Use a lógica de scripts que você já possui, apenas garantindo que
-        // API_URL seja configurada como "" para o mesmo domínio no Render.
-        const API_URL = "";
-        // ... restante do seu script
+        window.location.href = "/login.html";
     </script>
 </body>
 </html>
