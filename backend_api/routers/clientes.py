@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
 from backend_api.db import obter_db
-import backend_api.models as models
+from backend_api import models
 from backend_api.routers.auth import get_current_advogado
 
 router = APIRouter()

@@ -10,7 +10,7 @@ from pydantic import BaseModel, EmailStr
 
 # Importações diretas do projeto
 from db import obter_db
-import models
+from backend_api import models
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")

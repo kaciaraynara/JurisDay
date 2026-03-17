@@ -8,8 +8,8 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 # IMPORTAÇÃO LIMPA PARA O RENDER
 from db import SessionLocal, engine
-import models
-from models import Processo
+from backend_api import models
+from backend_api.models import Processo
 from .auth import get_current_advogado
 
 # models.Base.metadata.create_all(bind=engine)
