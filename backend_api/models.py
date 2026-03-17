@@ -18,7 +18,7 @@ class Advogado(Base):
     logo_base64 = Column(Text, nullable=True)
     data_cadastro = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
-    # Relacionamentos
+    # Relacionamentos Profissionais
     processos = relationship("Processo", back_populates="advogado")
     clientes = relationship("Cliente", back_populates="advogado")
 
