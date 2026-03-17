@@ -2,6 +2,19 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+# ... (restante do seu código)
+
+# 1. Sirva os arquivos da pasta frontend (CSS, JS, Imagens)
+# Certifique-se de que o nome da pasta no seu projeto é 'frontend'
+app.mount("/static", StaticFiles(directory="frontend"), name="static")
+
+# 2. Rota para servir o index.html na raiz
+@app.get("/")
+async def read_index():
+    return FileResponse('frontend/index.html')
 
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
