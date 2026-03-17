@@ -46,6 +46,8 @@ from routers import (
     calculadora,
     suporte,
 )
+from backend_api import models
+from backend_api.db import engine
 
 app.include_router(auth.router, prefix="/auth", tags=["Autenticação"])
 app.include_router(monitoramento.router, prefix="/monitorar", tags=["Monitoramento"])
@@ -60,6 +62,11 @@ app.include_router(calculadora.router, prefix="/calculadora", tags=["Calculadora
 app.include_router(suporte.router, prefix="/suporte", tags=["Suporte"])
 
 # --- 5. ROTAS DE NAVEGAÇÃO ---
+
+@app.on_event("startup")
+def criar_tabelas():
+    # Garante que as tabelas existam no banco antes de qualquer login/cadastro.
+    models.Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 async def serve_login():
