@@ -1,6 +1,6 @@
 import os
 import re
-import jwt
+import jwt  # Corrigido de 'j' para 'jwt'
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from pydantic import BaseModel, EmailStr
 
+# Importações diretas do projeto
 from db import obter_db
 import models
 
@@ -18,6 +19,8 @@ oauth2_scheme = HTTPBearer(auto_error=False)
 JWT_SECRET = os.getenv("JWT_SECRET", "jurisday-enterprise-edition-2026")
 JWT_ALG = "HS256"
 JWT_EXPIRE_MIN = 120
+
+# --- SCHEMAS ---
 
 class AdvogadoCreate(BaseModel):
     nome_completo: str
@@ -41,6 +44,32 @@ class AdvogadoCreate(BaseModel):
         if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", self.senha):
             return "A senha deve conter ao menos um caractere especial."
         return None
+
+# --- FUNÇÕES DE SEGURANÇA (UTILIZADAS POR OUTROS ROUTERS) ---
+
+def get_current_advogado(
+    cred: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
+    db: Session = Depends(obter_db),
+):
+    """Valida o token JWT e retorna o advogado logado"""
+    if not cred:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token ausente")
+    try:
+        payload = jwt.decode(cred.credentials, JWT_SECRET, algorithms=[JWT_ALG])
+        adv_id = payload.get("sub")
+        if adv_id is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido")
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expirado")
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Falha na autenticação")
+
+    adv = db.query(models.Advogado).filter(models.Advogado.id == int(adv_id)).first()
+    if not adv:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Conta não localizada")
+    return adv
+
+# --- ROTAS ---
 
 @router.post("/cadastrar", status_code=status.HTTP_201_CREATED)
 def cadastrar(advogado: AdvogadoCreate, db: Session = Depends(obter_db)):
@@ -72,7 +101,6 @@ def cadastrar(advogado: AdvogadoCreate, db: Session = Depends(obter_db)):
 
 @router.post("/login")
 def login(payload: dict, db: Session = Depends(obter_db)):
-    # Permite login por e-mail ou CPF/CNPJ
     identificador = payload.get("email_ou_cnpj")
     user = db.query(models.Advogado).filter(
         (models.Advogado.email == identificador) | (models.Advogado.cpf_cnpj == identificador)

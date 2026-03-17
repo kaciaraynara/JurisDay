@@ -10,7 +10,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from db import SessionLocal, engine
 import models
 from models import Processo
-from routers.auth import get_current_advogado
+from .auth import get_current_advogado
 
 # models.Base.metadata.create_all(bind=engine)
 
