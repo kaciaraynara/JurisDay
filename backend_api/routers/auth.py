@@ -1,80 +1,58 @@
 import os
-from datetime import datetime, timedelta, timezone
+import re
 import jwt
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
-# IMPORTAÇÃO DIRETA E LIMPA PARA O RENDER
 from db import obter_db
 import models
 
 router = APIRouter()
-
-# Usamos pbkdf2_sha256 para evitar dependência de backends nativos do bcrypt em ambiente de testes.
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = HTTPBearer(auto_error=False)
 
-JWT_SECRET = os.getenv(
-    "JWT_SECRET",
-    "default-change-me-default-change-me-default-change-me-64chars"
-)
-JWT_ALG = os.getenv("JWT_ALG", "HS256")
-JWT_EXPIRE_MIN = int(os.getenv("JWT_EXPIRE_MINUTES", "60"))
+JWT_SECRET = os.getenv("JWT_SECRET", "jurisday-enterprise-edition-2026")
+JWT_ALG = "HS256"
+JWT_EXPIRE_MIN = 120
 
 class AdvogadoCreate(BaseModel):
     nome_completo: str
     cpf_cnpj: str
     oab: str | None = None
-    email: str
+    email: EmailStr
     whatsapp: str | None = None
     senha: str
+    lembrete_senha: str | None = None
     plano: str = "Trial"
     logo_base64: str | None = None
 
-class LoginSchema(BaseModel):
-    email_ou_cnpj: str
-    senha: str
+    def validar_senha(self):
+        """Regras de Senha Forte para Grandes Escritórios"""
+        if len(self.senha) < 8:
+            return "A senha deve ter no mínimo 8 caracteres."
+        if not re.search(r"[A-Z]", self.senha):
+            return "A senha deve conter ao menos uma letra maiúscula."
+        if not re.search(r"[0-9]", self.senha):
+            return "A senha deve conter ao menos um número."
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", self.senha):
+            return "A senha deve conter ao menos um caractere especial."
+        return None
 
-class TokenOut(BaseModel):
-    token: str
-    nome: str
-    expires_in: int
+@router.post("/cadastrar", status_code=status.HTTP_201_CREATED)
+def cadastrar(advogado: AdvogadoCreate, db: Session = Depends(obter_db)):
+    erro_senha = advogado.validar_senha()
+    if erro_senha:
+        raise HTTPException(status_code=400, detail=erro_senha)
 
-
-def _criar_token(sub: int) -> str:
-    exp = datetime.now(timezone.utc) + timedelta(minutes=JWT_EXPIRE_MIN)
-    payload = {"sub": str(sub), "exp": exp}
-    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALG)
-
-
-def get_current_advogado(
-    cred: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
-    db: Session = Depends(obter_db),
-):
-    if not cred:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token ausente")
-    try:
-        payload = jwt.decode(cred.credentials, JWT_SECRET, algorithms=[JWT_ALG])
-        adv_id = payload.get("sub")
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expirado")
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido")
-
-    adv = db.query(models.Advogado).filter(models.Advogado.id == int(adv_id)).first()
-    if not adv:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuário não encontrado")
-    return adv
-
-@router.post("/cadastrar")
-def cadastrar_advogado(advogado: AdvogadoCreate, db: Session = Depends(obter_db)):
     if db.query(models.Advogado).filter(models.Advogado.email == advogado.email).first():
-        raise HTTPException(status_code=400, detail="E-mail já em uso.")
+        raise HTTPException(status_code=400, detail="Este e-mail já está em uso.")
+    
     if db.query(models.Advogado).filter(models.Advogado.cpf_cnpj == advogado.cpf_cnpj).first():
-        raise HTTPException(status_code=400, detail="Documento já cadastrado.")
+        raise HTTPException(status_code=400, detail="Este CPF/CNPJ já está cadastrado.")
 
     senha_hash = pwd_context.hash(advogado.senha)
     novo = models.Advogado(
@@ -84,32 +62,25 @@ def cadastrar_advogado(advogado: AdvogadoCreate, db: Session = Depends(obter_db)
         email=advogado.email,
         whatsapp=advogado.whatsapp,
         senha_hash=senha_hash,
-        plano_atual=advogado.plano,
-        logo_base64=advogado.logo_base64,
+        lembrete_senha=advogado.lembrete_senha,
+        logo_base64=advogado.logo_base64
     )
     db.add(novo)
     db.commit()
     db.refresh(novo)
-    return {"mensagem": "Cadastro efetuado", "id": novo.id}
+    return {"status": "sucesso", "mensagem": "Perfil jurídico criado com segurança."}
 
-
-@router.post("/login", response_model=TokenOut)
-def login(payload: LoginSchema, db: Session = Depends(obter_db)):
-    adv = db.query(models.Advogado).filter(
-        (models.Advogado.email == payload.email_ou_cnpj) | (models.Advogado.cpf_cnpj == payload.email_ou_cnpj)
+@router.post("/login")
+def login(payload: dict, db: Session = Depends(obter_db)):
+    # Permite login por e-mail ou CPF/CNPJ
+    identificador = payload.get("email_ou_cnpj")
+    user = db.query(models.Advogado).filter(
+        (models.Advogado.email == identificador) | (models.Advogado.cpf_cnpj == identificador)
     ).first()
-    if not adv or not pwd_context.verify(payload.senha, adv.senha_hash):
-        raise HTTPException(status_code=401, detail="Credenciais inválidas")
-    token = _criar_token(adv.id)
-    return TokenOut(token=token, nome=adv.nome_completo, expires_in=JWT_EXPIRE_MIN * 60)
-
-
-@router.get("/me")
-def me(usuario=Depends(get_current_advogado)):
-    return {
-        "id": usuario.id,
-        "nome": usuario.nome_completo,
-        "email": usuario.email,
-        "plano": usuario.plano_atual,
-        "whatsapp": usuario.whatsapp,
-    }
+    
+    if not user or not pwd_context.verify(payload.get("senha"), user.senha_hash):
+        raise HTTPException(status_code=401, detail="Credenciais inválidas.")
+    
+    exp = datetime.now(timezone.utc) + timedelta(minutes=JWT_EXPIRE_MIN)
+    token = jwt.encode({"sub": str(user.id), "exp": exp}, JWT_SECRET, algorithm=JWT_ALG)
+    return {"token": token, "nome": user.nome_completo, "expires_in": JWT_EXPIRE_MIN * 60}
