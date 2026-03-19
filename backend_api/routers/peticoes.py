@@ -32,9 +32,32 @@ class ExportSchema(BaseModel):
 
 @router.post("/gerar")
 async def gerar_peticao(dados: PeticaoSchema):
+    def _fallback(motivo: str):
+        texto = (
+            "EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) DE DIREITO DA "
+            f"{dados.juizo_destino or 'VARA COMPETENTE'}\n\n"
+            f"AUTOR: {dados.cliente_nome}\n"
+            f"RÉU: {dados.reu_nome}\n\n"
+            f"AÇÃO: {dados.tipo_acao}\n\n"
+            "I. DOS FATOS\n"
+            f"{dados.fatos_relatados}\n\n"
+            "II. DO DIREITO\n"
+            "A parte autora encontra amparo na legislação aplicável e na jurisprudência dominante, "
+            "cabendo a responsabilização da parte ré pelos danos causados, na forma da lei.\n\n"
+            "III. DOS PEDIDOS\n"
+            "a) o recebimento desta ação;\n"
+            "b) a citação da parte ré para responder, sob pena de revelia;\n"
+            "c) a procedência do pedido, com as condenações cabíveis;\n"
+            "d) a produção de todas as provas admitidas em direito.\n\n"
+            "Dá-se à causa o valor de R$ ________.\n\n"
+            "Termos em que,\n"
+            "Pede deferimento.\n"
+        )
+        return {"peticao_texto": texto, "fallback": True, "motivo": motivo}
+
     try:
         if client is None:
-            raise RuntimeError("Chave da Google AI ausente. Defina GOOGLE_GENAI_KEY no ambiente.")
+            return _fallback("Chave de IA ausente ou cota indisponível.")
         prompt = (
             "Elabore uma petição inicial completa, com endereçamento correto ao juízo informado, "
             "qualificação das partes, narrativa fática organizada, fundamentos jurídicos "
@@ -49,8 +72,14 @@ async def gerar_peticao(dados: PeticaoSchema):
         response = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
         return {"peticao_texto": response.text}
     except Exception as e:
+        # Erros de cota do Gemini normalmente retornam 429 ou mensagens de recurso esgotado.
+        msg = str(e).lower()
         print(f"❌ ERRO NA IA: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        if "429" in msg or "resource_exhausted" in msg or "cota" in msg or "quota" in msg:
+            # Retorna fallback para manter serviço estável.
+            return _fallback("Cota de IA esgotada. Tente novamente mais tarde ou configure outra chave de API.")
+        # Para outras falhas, devolvemos fallback também para não quebrar a API.
+        return _fallback("Falha temporária na IA. Tente novamente.")
 
 
 def _gerar_docx(texto: str) -> BytesIO:
